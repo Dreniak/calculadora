@@ -1,0 +1,29 @@
+[package]
+name = "calculadora-pensao"
+version = "1.0.0"
+description = "Calculadora Judicial de Pensão Alimentícia (Execução de Alimentos)"
+edition = "2021"
+rust-version = "1.77"
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+tauri = { version = "2", features = [] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+rusqlite = { version = "0.32", features = ["bundled"] }
+ureq = { version = "2", features = ["json"] }
+uuid = { version = "1", features = ["v4"] }
+base64 = "0.22"
+
+[features]
+# por padrão o Tauri usa webview do sistema; nada extra aqui
+default = []
+
+[profile.release]
+panic = "abort"
+codegen-units = 1
+lto = true
+opt-level = "s"
+strip = true

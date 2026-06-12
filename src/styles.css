@@ -1,0 +1,319 @@
+/* Calculadora Judicial de Pensão Alimentícia — estilos (RNF-6) */
+
+:root {
+  --azul: #0e3a6e;
+  --azul-claro: #1a5da8;
+  --dourado: #c9a227;
+  --fundo: #f4f6f9;
+  --painel: #ffffff;
+  --borda: #d6dce4;
+  --texto: #1d2733;
+  --texto-suave: #5a6878;
+  --alerta-fundo: #fff7e0;
+  --alerta-borda: #e3c25b;
+  --editado: #fff3cd;
+  --foco: #2f7de1;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  height: 100%;
+  font: 14px/1.45 "Segoe UI", system-ui, -apple-system, sans-serif;
+  color: var(--texto);
+  background: var(--fundo);
+}
+
+body { display: flex; }
+
+:focus-visible {
+  outline: 3px solid var(--foco);
+  outline-offset: 1px;
+  border-radius: 3px;
+}
+
+.oculto { display: none !important; }
+
+/* ---------------- biblioteca (RF-7) ---------------- */
+#biblioteca {
+  width: 290px;
+  min-width: 230px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  background: var(--azul);
+  color: #eef3f9;
+  height: 100vh;
+  position: sticky;
+  top: 0;
+}
+#biblioteca header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 14px 8px;
+}
+#biblioteca h2 { margin: 0; font-size: 16px; letter-spacing: 0.04em; }
+#buscaBiblioteca {
+  margin: 0 14px 10px;
+  padding: 7px 10px;
+  border: 1px solid rgba(255 255 255 / 0.25);
+  border-radius: 6px;
+  background: rgba(255 255 255 / 0.12);
+  color: #fff;
+}
+#buscaBiblioteca::placeholder { color: rgba(255 255 255 / 0.6); }
+#listaCalculos {
+  list-style: none;
+  margin: 0;
+  padding: 0 8px;
+  overflow-y: auto;
+  flex: 1;
+}
+#listaCalculos li {
+  background: rgba(255 255 255 / 0.07);
+  border-radius: 8px;
+  padding: 9px 10px;
+  margin-bottom: 7px;
+  cursor: pointer;
+}
+#listaCalculos li:hover { background: rgba(255 255 255 / 0.16); }
+#listaCalculos li.ativo { outline: 2px solid var(--dourado); }
+#listaCalculos .proc { font-weight: 600; font-size: 13px; word-break: break-all; }
+#listaCalculos .partes { font-size: 12px; color: rgba(255 255 255 / 0.75); margin: 2px 0 4px; }
+#listaCalculos .acoesItem { display: flex; gap: 6px; margin-top: 5px; }
+#listaCalculos .acoesItem button {
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 5px;
+  border: 1px solid rgba(255 255 255 / 0.3);
+  background: transparent;
+  color: #fff;
+  cursor: pointer;
+}
+#listaCalculos .acoesItem button:hover { background: rgba(255 255 255 / 0.2); }
+#biblioteca footer {
+  padding: 10px 14px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+#biblioteca footer button { width: 100%; }
+.vazioBiblioteca { color: rgba(255 255 255 / 0.6); font-size: 12px; text-align: center; padding: 18px 10px; }
+
+/* tags de rito */
+.tag {
+  display: inline-block;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  padding: 1px 7px;
+  border-radius: 10px;
+  margin-right: 4px;
+  text-transform: uppercase;
+}
+.tag.prisao { background: #8c2f39; color: #fff; }
+.tag.exprop { background: #1f5e3b; color: #fff; }
+
+/* ---------------- conteúdo principal ---------------- */
+main {
+  flex: 1;
+  min-width: 0;
+  padding: 20px 26px 60px;
+  max-width: 1180px;
+}
+main h1 {
+  font-size: 20px;
+  color: var(--azul);
+  margin: 0 0 14px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.selo {
+  font-size: 11px;
+  font-weight: 600;
+  background: var(--dourado);
+  color: #4a3a05;
+  border-radius: 10px;
+  padding: 2px 9px;
+}
+main section {
+  background: var(--painel);
+  border: 1px solid var(--borda);
+  border-radius: 10px;
+  padding: 16px 18px;
+  margin-bottom: 16px;
+}
+main section h2 {
+  margin: 0 0 12px;
+  font-size: 15px;
+  color: var(--azul);
+}
+
+label { display: flex; flex-direction: column; gap: 4px; font-size: 12.5px; color: var(--texto-suave); }
+label.caixinha { flex-direction: row; align-items: center; gap: 7px; padding-top: 18px; color: var(--texto); }
+input, select, textarea {
+  font: inherit;
+  padding: 7px 9px;
+  border: 1px solid var(--borda);
+  border-radius: 6px;
+  background: #fff;
+  color: var(--texto);
+  min-width: 0;
+}
+textarea { resize: vertical; }
+
+.grade4 {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: 12px;
+  margin-bottom: 12px;
+}
+fieldset {
+  border: 1px solid var(--borda);
+  border-radius: 8px;
+  margin: 0 0 12px;
+  padding: 10px 12px 12px;
+}
+legend { font-size: 12.5px; font-weight: 600; color: var(--azul); padding: 0 6px; }
+
+.linhaForm {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: flex-end;
+  margin-bottom: 12px;
+}
+.linhaForm label { flex: 1 1 130px; }
+.linhaForm button { flex: 0 0 auto; }
+
+button {
+  font: inherit;
+  cursor: pointer;
+  border-radius: 6px;
+  padding: 8px 14px;
+  border: 1px solid transparent;
+}
+button.primario { background: var(--azul-claro); color: #fff; }
+button.primario:hover { background: var(--azul); }
+button.suave { background: #e8edf3; color: var(--azul); border-color: var(--borda); }
+button.suave:hover { background: #d8e2ee; }
+button:disabled { opacity: 0.45; cursor: not-allowed; }
+button.perigo { background: transparent; color: #9c2b2b; border-color: #d8b1b1; }
+button.perigo:hover { background: #fbeaea; }
+button.mini { font-size: 11.5px; padding: 3px 9px; }
+
+/* ---------------- tabelas ---------------- */
+table.lista, table.demo {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+table.lista th, table.demo th {
+  text-align: left;
+  font-size: 11.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--texto-suave);
+  border-bottom: 2px solid var(--borda);
+  padding: 6px 8px;
+}
+table.lista td, table.demo td {
+  border-bottom: 1px solid var(--borda);
+  padding: 6px 8px;
+  vertical-align: middle;
+}
+th.num, td.num { text-align: right; font-variant-numeric: tabular-nums; }
+table.demo tfoot td { font-weight: 600; }
+tr.editada td { background: var(--editado); }
+
+td.editavel input {
+  width: 110px;
+  text-align: right;
+  padding: 3px 6px;
+  font-variant-numeric: tabular-nums;
+}
+tr.editada td.editavel input { border-color: var(--dourado); background: #fffbe8; }
+
+.demoRito { margin-bottom: 26px; }
+.demoRito h3 {
+  font-size: 14px;
+  color: var(--azul);
+  border-bottom: 2px solid var(--azul);
+  padding-bottom: 5px;
+  margin: 0 0 10px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.demoRito h4 { font-size: 13px; margin: 14px 0 6px; color: var(--texto-suave); }
+.cabecTabela { display: flex; align-items: center; justify-content: space-between; }
+
+.totalizacao { margin-top: 10px; max-width: 560px; margin-left: auto; }
+.totalizacao table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.totalizacao td { padding: 4px 8px; border-bottom: 1px dotted var(--borda); }
+.totalizacao tr.geral td {
+  font-weight: 700;
+  font-size: 14px;
+  color: var(--azul);
+  border-top: 2px solid var(--azul);
+  border-bottom: none;
+}
+
+.barraAcoes { display: flex; gap: 10px; align-items: center; margin-bottom: 12px; flex-wrap: wrap; }
+.separadorFlex { flex: 1; }
+.vazio { color: var(--texto-suave); font-style: italic; }
+
+/* ---------------- avisos e toast ---------------- */
+.avisos {
+  background: var(--alerta-fundo);
+  border: 1px solid var(--alerta-borda);
+  border-radius: 8px;
+  padding: 10px 14px;
+  margin-bottom: 14px;
+  font-size: 13px;
+}
+.avisos ul { margin: 4px 0 0; padding-left: 18px; }
+.toast {
+  position: fixed;
+  bottom: 22px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--azul);
+  color: #fff;
+  border-radius: 8px;
+  padding: 11px 20px;
+  box-shadow: 0 6px 22px rgba(0 0 0 / 0.25);
+  z-index: 50;
+  max-width: 80vw;
+}
+.toast.erro { background: #8c2f39; }
+
+/* ---------------- diálogos ---------------- */
+dialog {
+  border: none;
+  border-radius: 12px;
+  box-shadow: 0 10px 40px rgba(0 0 0 / 0.3);
+  padding: 20px 22px;
+  width: min(680px, 92vw);
+}
+dialog::backdrop { background: rgba(10 25 47 / 0.45); }
+dialog h2 { margin-top: 0; color: var(--azul); font-size: 16px; }
+dialog label { margin-bottom: 10px; }
+dialog menu { display: flex; justify-content: flex-end; gap: 10px; padding: 0; margin: 14px 0 0; }
+.rolavel { max-height: 55vh; overflow-y: auto; margin-top: 10px; }
+.statusInline { font-size: 12px; color: var(--texto-suave); }
+
+#tabelaIndices table { width: 100%; border-collapse: collapse; font-size: 13px; }
+#tabelaIndices th, #tabelaIndices td { padding: 4px 8px; border-bottom: 1px solid var(--borda); text-align: left; }
+#tabelaIndices input { width: 110px; text-align: right; padding: 3px 6px; }
+.statusOficial { color: #1f5e3b; font-size: 11.5px; font-weight: 600; }
+.statusEstimado { color: #9c6b00; font-size: 11.5px; font-weight: 600; }
+
+@media (max-width: 900px) {
+  body { flex-direction: column; }
+  #biblioteca { width: 100%; height: auto; position: static; max-height: 40vh; }
+}
