@@ -332,16 +332,18 @@ export function gerarPdfRito(calculo, demo, { agora = new Date() } = {}) {
     y -= 12;
   };
   const t = demo.totais;
-  linhaTotal('Subtotal 01 — total das parcelas (Tabela I)', t.subtotal01);
-  linhaTotal(`(+) Multa por descumprimento (${pctBR(t.multaDescumprimentoPct, 2)}%)`, t.multaDescumprimento);
-  linhaTotal('Subtotal 02', t.subtotal02);
-  linhaTotal(`(+) Honorários advocatícios (${pctBR(t.honorariosPct, 2)}%)`, t.honorarios);
-  linhaTotal('Subtotal 03', t.subtotal03);
-  if (demo.rito === 'exprop') {
-    linhaTotal('(+) Multa de 10% — CPC, art. 523, § 1º (sobre o Subtotal 01)', t.multa523);
-    linhaTotal('(+) Honorários de 10% — CPC, art. 523, § 1º (sobre o Subtotal 01)', t.honorarios523);
-    linhaTotal('Subtotal 04', t.subtotal04);
+  const tem523 = demo.rito === 'exprop' && (t.multa523 > 0 || t.honorarios523 > 0);
+  if (tem523) {
+    linhaTotal('Total das parcelas (Tabela I)', t.parcelas);
+    linhaTotal('(+) Multa de 10% — CPC, art. 523, § 1º', t.multa523);
+    linhaTotal('(+) Honorários de 10% — CPC, art. 523, § 1º', t.honorarios523);
+    linhaTotal('Subtotal 01 (parcelas + art. 523, § 1º)', t.subtotal01);
+  } else {
+    linhaTotal('Subtotal 01 — total das parcelas (Tabela I)', t.subtotal01);
   }
+  linhaTotal(`(+) Multa por descumprimento (${pctBR(t.multaDescumprimentoPct, 2)}%)`, t.multaDescumprimento);
+  linhaTotal(`(+) Honorários advocatícios (${pctBR(t.honorariosPct, 2)}%)`, t.honorarios);
+  linhaTotal('Subtotal 02', t.subtotal02);
   linhaTotal('(−) Pagamentos fora do intervalo (corrigidos)', t.pagamentosFora);
   doc.line(MARGEM, y + 8, MARGEM + LARGURA, y + 8, 0.8);
   linhaTotal('TOTAL GERAL', t.totalGeral, true);
@@ -362,7 +364,7 @@ export function gerarPdfRito(calculo, demo, { agora = new Date() } = {}) {
   }
   const t2 = demo.totais;
   if (demo.rito === 'exprop' && (t2.multa523 > 0 || t2.honorarios523 > 0)) {
-    notas.push('A multa e os honorários de 10% do art. 523, § 1º do CPC incidem apenas no rito da expropriação e têm por base o Subtotal 01.');
+    notas.push('A multa e os honorários de 10% do art. 523, § 1º do CPC incidem apenas no rito da expropriação, têm por base o total das parcelas e integram o Subtotal 01.');
   }
   if (calculo.config.observacoes) {
     notas.push(`Observações: ${calculo.config.observacoes}`);
