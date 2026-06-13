@@ -97,12 +97,13 @@ test('PDF da expropriação: estrutura válida, xref e conteúdo', () => {
   }
 });
 
-test('PDF da prisão: sem consectários, com total geral', () => {
+test('PDF da prisão: multa/honorários incidem, mas sem o art. 523', () => {
   const calc = calculoDemo();
   const r = calcular(calc, snapshot());
   const bytes = gerarPdfRito(calc, r.ritos.prisao, { agora: new Date('2026-06-12T12:00:00') });
   const s = textoPdf(bytes);
   assert.ok(s.includes('art. 528'));
   assert.ok(s.includes('TOTAL GERAL'));
-  assert.ok(!s.includes('Multa por descumprimento'));
+  assert.ok(s.includes('Multa por descumprimento')); // multa/honorários incidem nos dois ritos
+  assert.ok(!s.includes('art. 523'));                 // multa/honorários do art. 523 só na expropriação
 });

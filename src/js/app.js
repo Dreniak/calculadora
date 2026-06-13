@@ -4,7 +4,7 @@
 
 import { calcular, NOME_RITO } from './engine.js';
 import {
-  novoCalculo, validarCalculo, duplicarCalculo, ritosDoCalculo,
+  novoCalculo, validarCalculo, duplicarCalculo,
   nomeArquivoPdf, resumoCalculo,
 } from './model.js';
 import { gerarPdfRito, moedaBR, competenciaBR, dataBR } from './pdf.js';
@@ -99,9 +99,6 @@ function preencherFormulario() {
 
 function atualizarVisibilidades() {
   $('rotJurosFixo').classList.toggle('oculto', $('cJuros').value !== 'fixo');
-  // consectários só quando houver valor devido pela expropriação (RF-1)
-  const temExprop = ritosDoCalculo(calculo).includes('exprop');
-  $('consectarios').classList.toggle('oculto', !temExprop);
   $('rotVdValor').firstChild.textContent =
     $('vdForma').value === 'sm' ? '% do salário mínimo ' : 'Valor (R$) ';
   const periodo = $('pgTipo').value === 'periodo';
@@ -291,11 +288,12 @@ function definirOverride(chave, campo, valor) {
   else ov[campo] = valor;
   if (ov.valorDevido == null && ov.valorPago == null) delete calculo.overrides[chave];
   else calculo.overrides[chave] = ov;
-  $('btnDesfazer').disabled = desfazerPilha.length === 0;
   aposMudanca(false);
 }
 
-$('btnDesfazer').addEventListener('click', () => {
+// Desfaz a última edição inline (RF-5). O botão é renderizado por rito no
+// cabeçalho da Tabela I, aparecendo só quando há algo a desfazer.
+function desfazer() {
   const ult = desfazerPilha.pop();
   if (!ult) return;
   const ov = { ...(calculo.overrides[ult.chave] || {}) };
@@ -303,9 +301,8 @@ $('btnDesfazer').addEventListener('click', () => {
   else ov[ult.campo] = ult.anterior;
   if (ov.valorDevido == null && ov.valorPago == null) delete calculo.overrides[ult.chave];
   else calculo.overrides[ult.chave] = ov;
-  $('btnDesfazer').disabled = desfazerPilha.length === 0;
   aposMudanca(false);
-});
+}
 
 function restaurarLinha(chave) {
   const ov = calculo.overrides[chave];
@@ -314,7 +311,6 @@ function restaurarLinha(chave) {
     if (ov[campo] != null) desfazerPilha.push({ chave, campo, anterior: ov[campo] });
   }
   delete calculo.overrides[chave];
-  $('btnDesfazer').disabled = desfazerPilha.length === 0;
   aposMudanca(false);
 }
 
@@ -322,7 +318,6 @@ function restaurarTabela(rito) {
   for (const chave of Object.keys(calculo.overrides)) {
     if (chave.startsWith(`${rito}:`)) restaurarLinhaSemRender(chave);
   }
-  $('btnDesfazer').disabled = desfazerPilha.length === 0;
   aposMudanca(false);
 }
 
@@ -369,15 +364,21 @@ function renderDemonstrativo() {
       NOME_RITO[rito],
     ));
 
-    // Tabela I
+    // Tabela I — cabeçalho com ações: Desfazer (quando há edição), Restaurar
+    // tabela (quando este rito tem overrides) e Gerar PDF (sempre), gerando o
+    // demonstrativo deste rito.
     const temOverrideRito = Object.keys(calculo.overrides).some((c) => c.startsWith(`${rito}:`));
+    const acoes = el('div', { class: 'acoesTabela' });
+    if (desfazerPilha.length) {
+      acoes.append(el('button', { class: 'mini suave btnDesfazer', text: 'Desfazer edição', onclick: desfazer }));
+    }
+    if (temOverrideRito) {
+      acoes.append(el('button', { class: 'mini suave', text: 'Restaurar tabela', onclick: () => restaurarTabela(rito) }));
+    }
+    acoes.append(el('button', { class: 'mini primario btnPdf', text: 'Gerar PDF', onclick: () => gerarPdfDeRito(rito) }));
     bloco.append(el('div', { class: 'cabecTabela' },
       el('h4', { text: 'Tabela I — Parcelas do débito alimentar' }),
-      el('button', {
-        class: 'mini suave', text: 'Restaurar tabela',
-        disabled: temOverrideRito ? undefined : 'disabled',
-        onclick: () => restaurarTabela(rito),
-      }),
+      acoes,
     ));
     const corpoI = el('tbody');
     for (const l of demo.tabelaI) {
@@ -444,22 +445,18 @@ function renderDemonstrativo() {
         el('td', { text: rotulo }),
         el('td', { class: 'num', text: `R$ ${moedaBR(valor)}` }),
       ));
+    linha('Subtotal 01 — total das parcelas (Tabela I)', t.subtotal01);
+    linha(`(+) Multa por descumprimento (${t.multaDescumprimentoPct}%)`, t.multaDescumprimento);
+    linha('Subtotal 02', t.subtotal02);
+    linha(`(+) Honorários advocatícios (${t.honorariosPct}%)`, t.honorarios);
+    linha('Subtotal 03', t.subtotal03);
     if (rito === 'exprop') {
-      linha('Subtotal 01 — total das parcelas (Tabela I)', t.subtotal01);
-      linha(`(+) Multa por descumprimento (${t.multaDescumprimentoPct}%)`, t.multaDescumprimento);
-      linha('Subtotal 02', t.subtotal02);
-      linha(`(+) Honorários advocatícios (${t.honorariosPct}%)`, t.honorarios);
-      linha('Subtotal 03', t.subtotal03);
-      linha('(+) Multa 10% — art. 523, § 1º', t.multa523);
-      linha('(+) Honorários 10% — art. 523, § 1º', t.honorarios523);
+      linha('(+) Multa 10% — art. 523, § 1º (sobre o Subtotal 01)', t.multa523);
+      linha('(+) Honorários 10% — art. 523, § 1º (sobre o Subtotal 01)', t.honorarios523);
       linha('Subtotal 04', t.subtotal04);
-      linha('(−) Pagamentos fora do intervalo (corrigidos)', t.pagamentosFora);
-      linha('TOTAL GERAL', t.totalGeral, true);
-    } else {
-      linha('Subtotal 01 — total das parcelas (Tabela I)', t.subtotal01);
-      linha('(−) Pagamentos fora do intervalo (corrigidos)', t.pagamentosFora);
-      linha('TOTAL GERAL', t.totalGeral, true);
     }
+    linha('(−) Pagamentos fora do intervalo (corrigidos)', t.pagamentosFora);
+    linha('TOTAL GERAL', t.totalGeral, true);
     bloco.append(el('div', { class: 'totalizacao' }, el('table', {}, ...linhas)));
     div.append(bloco);
   }
@@ -498,30 +495,27 @@ async function salvar() {
 }
 $('btnSalvar').addEventListener('click', salvar);
 
-$('btnPdf').addEventListener('click', async () => {
+// Gera o PDF de um rito (RF-6), acionado pelo botão no cabeçalho da Tabela I.
+// Com dois ritos, o nome do arquivo recebe o sufixo do rito.
+async function gerarPdfDeRito(rito) {
   lerParametros();
   resultado = calcular(calculo, snapshotAtivo());
   const ordem = resultado.ordem;
-  if (!ordem.length) return toast('Não há demonstrativo para gerar.', true);
-  const doisRitos = ordem.length > 1;
-  const gerados = [];
+  if (!ordem.includes(rito)) return toast('Não há demonstrativo para gerar.', true);
   try {
-    for (const rito of ordem) {
-      const bytes = gerarPdfRito(calculo, resultado.ritos[rito]);
-      const nome = nomeArquivoPdf(calculo, rito, doisRitos);
-      gerados.push(await backend.salvarPdf(nome, bytes));
-    }
-    toast(`PDF gerado: ${gerados.join(' | ')}`);
+    const bytes = gerarPdfRito(calculo, resultado.ritos[rito]);
+    const nome = nomeArquivoPdf(calculo, rito, ordem.length > 1);
+    const destino = await backend.salvarPdf(nome, bytes);
+    toast(`PDF gerado: ${destino}`);
   } catch (e) {
     toast(`Erro ao gerar PDF: ${e.message || e}`, true);
   }
-});
+}
 
 function novo() {
   calculo = novoCalculo();
   desfazerPilha = [];
   resultado = null;
-  $('btnDesfazer').disabled = true;
   $('formVD').reset();
   $('formPg').reset();
   preencherFormulario();
@@ -585,7 +579,6 @@ async function abrir(id) {
   try {
     calculo = validarCalculo(await backend.carregarCalculo(id));
     desfazerPilha = [];
-    $('btnDesfazer').disabled = true;
     preencherFormulario();
     aposMudanca();
     marcarAtivo(id);

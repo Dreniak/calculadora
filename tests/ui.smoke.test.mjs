@@ -54,7 +54,7 @@ test('fluxo principal no navegador (modo protótipo)', async () => {
   doc.getElementById('vdValor').value = '500';
   doc.getElementById('formVD').dispatchEvent(new win.Event('submit', { bubbles: true, cancelable: true }));
 
-  // consectários aparecem porque há rito da expropriação (RF-1)
+  // consectários ficam sempre visíveis (RF-1)
   assert.ok(!doc.getElementById('consectarios').classList.contains('oculto'));
 
   // pagamento dentro do período
@@ -81,9 +81,9 @@ test('fluxo principal no navegador (modo protótipo)', async () => {
   assert.equal(geral, 'R$ 1.400,00');
   assert.ok(doc.querySelector('#resultado tr.editada'), 'linha editada deve ser marcada');
 
-  // desfazer (RF-5)
-  const btnDesfazer = doc.getElementById('btnDesfazer');
-  assert.ok(!btnDesfazer.disabled);
+  // desfazer (RF-5) — botão renderizado no cabeçalho da Tabela I quando há edição
+  const btnDesfazer = doc.querySelector('#resultado .btnDesfazer');
+  assert.ok(btnDesfazer, 'botão Desfazer deve aparecer após edição');
   btnDesfazer.click();
   geral = doc.querySelector('#resultado .totalizacao tr.geral td.num').textContent;
   assert.equal(geral, 'R$ 1.300,00');

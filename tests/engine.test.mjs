@@ -214,19 +214,19 @@ test('cascata da expropriação: consectários antes do abatimento (decisão do 
   assert.equal(r.totais.subtotal01, 3000);
   assert.equal(r.totais.multaDescumprimento, 300);     // 10% de 3000
   assert.equal(r.totais.subtotal02, 3300);
-  assert.equal(r.totais.honorarios, 330);              // 10% de 3300
+  assert.equal(r.totais.honorarios, 330);              // 10% de 3300 (cascata)
   assert.equal(r.totais.subtotal03, 3630);
-  assert.equal(r.totais.multa523, 363);                // 10% de 3630
-  assert.equal(r.totais.honorarios523, 363);
-  assert.equal(r.totais.subtotal04, 4356);
+  assert.equal(r.totais.multa523, 300);                // 10% do Subtotal 01 (3000)
+  assert.equal(r.totais.honorarios523, 300);           // 10% do Subtotal 01 (3000)
+  assert.equal(r.totais.subtotal04, 4230);             // 3630 + 300 + 300
   assert.equal(r.totais.pagamentosFora, foraCorrigido);
-  assert.equal(r.totais.totalGeral, round2(4356 - foraCorrigido));
+  assert.equal(r.totais.totalGeral, round2(4230 - foraCorrigido));
 });
 
-test('prisão: apenas Tabela I menos pagamentos fora; sem consectários', () => {
+test('prisão: multa e honorários incidem; sem multa/honorários do art. 523', () => {
   const s = snapshotSintetico();
   const calc = calculoBase({
-    config: { dataBase: '2025-06', juros: 'sem', multaDescumprimentoPct: 10 },
+    config: { dataBase: '2025-06', juros: 'sem', multaDescumprimentoPct: 10, honorariosPct: 10 },
     valoresDevidos: [
       { id: '1', rito: 'prisao', de: '2025-06', ate: null, forma: 'fixo', valor: 1000 },
     ],
@@ -234,9 +234,14 @@ test('prisão: apenas Tabela I menos pagamentos fora; sem consectários', () => 
   });
   const r = calcular(calc, s).ritos.prisao;
   assert.equal(r.totais.subtotal01, 1000);
+  assert.equal(r.totais.multaDescumprimento, 100);     // 10% de 1000
+  assert.equal(r.totais.subtotal02, 1100);
+  assert.equal(r.totais.honorarios, 110);              // 10% de 1100 (cascata)
+  assert.equal(r.totais.subtotal03, 1210);
+  assert.equal(r.totais.multa523, undefined);          // art. 523 só na expropriação
+  assert.equal(r.totais.subtotal04, undefined);
   assert.equal(r.totais.pagamentosFora, round2(200 * 1.01));
-  assert.equal(r.totais.totalGeral, round2(1000 - round2(200 * 1.01)));
-  assert.equal(r.totais.multaDescumprimento, undefined);
+  assert.equal(r.totais.totalGeral, round2(1210 - round2(200 * 1.01)));
 });
 
 test('linha da Tabela I: saldo, corrigido, juros e total', () => {

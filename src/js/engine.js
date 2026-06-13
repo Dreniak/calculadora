@@ -5,7 +5,9 @@
 //   8.2 juros de mora legais (0,5% a.m. até 10/01/2003; 1% a.m. até 29/08/2024;
 //       Taxa Legal a partir de então), fixos ou sem juros — regime simples
 //   8.3 pagamentos (soma por mês, imputação dentro/fora do período)
-//   8.4 cascata de totalização da expropriação
+//   8.4 cascata de totalização: multa por descumprimento e honorários
+//       advocatícios incidem sobre ambos os ritos; multa e honorários do
+//       art. 523 só na expropriação, com base no Subtotal 01
 //   8.5 totalização do rito da prisão
 //
 // Módulo puro: sem DOM, sem Tauri. Usado pela UI e pelos testes (Node).
@@ -348,40 +350,39 @@ export function calcular(calculo, snapshot) {
       tabelaII,
     };
 
+    // 8.4 — todos os consectários incidem ANTES do abatimento dos pagamentos
+    // fora do intervalo (decisão de produto registrada no PRD). A multa por
+    // descumprimento e os honorários advocatícios incidem sobre ambos os
+    // ritos quando preenchidos; a multa e os honorários do art. 523 só na
+    // expropriação, sempre com base no Subtotal 01.
+    const multaPct = Number(config.multaDescumprimentoPct) || 0;
+    const honPct = Number(config.honorariosPct) || 0;
+    const multaDescumprimento = round2(subtotal01 * (multaPct / 100));
+    const subtotal02 = round2(subtotal01 + multaDescumprimento);
+    const honorarios = round2(subtotal02 * (honPct / 100));
+    const subtotal03 = round2(subtotal02 + honorarios);
+    const totais = {
+      subtotal01,
+      multaDescumprimentoPct: multaPct,
+      multaDescumprimento,
+      subtotal02,
+      honorariosPct: honPct,
+      honorarios,
+      subtotal03,
+      pagamentosFora,
+    };
     if (rito === 'exprop') {
-      // 8.4 — consectários incidem ANTES do abatimento dos pagamentos fora
-      // do intervalo (decisão de produto registrada no PRD).
-      const multaPct = Number(config.multaDescumprimentoPct) || 0;
-      const honPct = Number(config.honorariosPct) || 0;
-      const multaDescumprimento = round2(subtotal01 * (multaPct / 100));
-      const subtotal02 = round2(subtotal01 + multaDescumprimento);
-      const honorarios = round2(subtotal02 * (honPct / 100));
-      const subtotal03 = round2(subtotal02 + honorarios);
-      const multa523 = config.multa523 ? round2(subtotal03 * 0.10) : 0;
-      const honorarios523 = config.honorarios523 ? round2(subtotal03 * 0.10) : 0;
+      const multa523 = config.multa523 ? round2(subtotal01 * 0.10) : 0;
+      const honorarios523 = config.honorarios523 ? round2(subtotal01 * 0.10) : 0;
       const subtotal04 = round2(subtotal03 + multa523 + honorarios523);
-      demo.totais = {
-        subtotal01,
-        multaDescumprimentoPct: multaPct,
-        multaDescumprimento,
-        subtotal02,
-        honorariosPct: honPct,
-        honorarios,
-        subtotal03,
-        multa523,
-        honorarios523,
-        subtotal04,
-        pagamentosFora,
-        totalGeral: round2(subtotal04 - pagamentosFora),
-      };
+      totais.multa523 = multa523;
+      totais.honorarios523 = honorarios523;
+      totais.subtotal04 = subtotal04;
+      totais.totalGeral = round2(subtotal04 - pagamentosFora);
     } else {
-      // 8.5 — prisão: sem consectários
-      demo.totais = {
-        subtotal01,
-        pagamentosFora,
-        totalGeral: round2(subtotal01 - pagamentosFora),
-      };
+      totais.totalGeral = round2(subtotal03 - pagamentosFora);
     }
+    demo.totais = totais;
     ritos[rito] = demo;
   }
 

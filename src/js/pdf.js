@@ -325,7 +325,7 @@ export function gerarPdfRito(calculo, demo, { agora = new Date() } = {}) {
   }
 
   // ---- Totalização (Seção 8) ---------------------------------------------
-  garantir(demo.rito === 'exprop' ? 150 : 70);
+  garantir(demo.rito === 'exprop' ? 150 : 110);
   doc.text(MARGEM, y, 'Totalização', { size: 9, bold: true });
   y -= 14;
   const linhaTotal = (rotulo, valor, destaque = false) => {
@@ -337,24 +337,19 @@ export function gerarPdfRito(calculo, demo, { agora = new Date() } = {}) {
     y -= 12;
   };
   const t = demo.totais;
+  linhaTotal('Subtotal 01 — total das parcelas (Tabela I)', t.subtotal01);
+  linhaTotal(`(+) Multa por descumprimento (${pctBR(t.multaDescumprimentoPct, 2)}%)`, t.multaDescumprimento);
+  linhaTotal('Subtotal 02', t.subtotal02);
+  linhaTotal(`(+) Honorários advocatícios (${pctBR(t.honorariosPct, 2)}%)`, t.honorarios);
+  linhaTotal('Subtotal 03', t.subtotal03);
   if (demo.rito === 'exprop') {
-    linhaTotal('Subtotal 01 — total das parcelas (Tabela I)', t.subtotal01);
-    linhaTotal(`(+) Multa por descumprimento (${pctBR(t.multaDescumprimentoPct, 2)}%)`, t.multaDescumprimento);
-    linhaTotal('Subtotal 02', t.subtotal02);
-    linhaTotal(`(+) Honorários advocatícios (${pctBR(t.honorariosPct, 2)}%)`, t.honorarios);
-    linhaTotal('Subtotal 03', t.subtotal03);
-    linhaTotal('(+) Multa de 10% — CPC, art. 523, § 1º', t.multa523);
-    linhaTotal('(+) Honorários de 10% — CPC, art. 523, § 1º', t.honorarios523);
+    linhaTotal('(+) Multa de 10% — CPC, art. 523, § 1º (sobre o Subtotal 01)', t.multa523);
+    linhaTotal('(+) Honorários de 10% — CPC, art. 523, § 1º (sobre o Subtotal 01)', t.honorarios523);
     linhaTotal('Subtotal 04', t.subtotal04);
-    linhaTotal('(−) Pagamentos fora do intervalo (corrigidos)', t.pagamentosFora);
-    doc.line(MARGEM, y + 8, MARGEM + LARGURA, y + 8, 0.8);
-    linhaTotal('TOTAL GERAL', t.totalGeral, true);
-  } else {
-    linhaTotal('Subtotal 01 — total das parcelas (Tabela I)', t.subtotal01);
-    linhaTotal('(−) Pagamentos fora do intervalo (corrigidos)', t.pagamentosFora);
-    doc.line(MARGEM, y + 8, MARGEM + LARGURA, y + 8, 0.8);
-    linhaTotal('TOTAL GERAL', t.totalGeral, true);
   }
+  linhaTotal('(−) Pagamentos fora do intervalo (corrigidos)', t.pagamentosFora);
+  doc.line(MARGEM, y + 8, MARGEM + LARGURA, y + 8, 0.8);
+  linhaTotal('TOTAL GERAL', t.totalGeral, true);
   y -= 8;
 
   // ---- Notas explicativas -------------------------------------------------
@@ -371,8 +366,12 @@ export function gerarPdfRito(calculo, demo, { agora = new Date() } = {}) {
     notas.push('Cálculo sem incidência de juros de mora.');
   }
   notas.push('Pagamentos do mesmo mês são somados; pagamento dentro do período do débito abate a parcela da própria competência; pagamento fora do período é corrigido monetariamente e deduzido do total.');
-  if (demo.rito === 'exprop') {
-    notas.push('Os consectários legais incidem sobre o débito antes do abatimento dos pagamentos fora do intervalo.');
+  const t2 = demo.totais;
+  if ((t2.multaDescumprimentoPct || 0) > 0 || (t2.honorariosPct || 0) > 0) {
+    notas.push('A multa por descumprimento e os honorários advocatícios incidem sobre o débito antes do abatimento dos pagamentos fora do intervalo.');
+  }
+  if (demo.rito === 'exprop' && (t2.multa523 > 0 || t2.honorarios523 > 0)) {
+    notas.push('A multa e os honorários de 10% do art. 523, § 1º do CPC incidem apenas no rito da expropriação e têm por base o Subtotal 01.');
   }
   if (temOverride) {
     notas.push('(*) Valor ajustado manualmente pelo elaborador do cálculo.');
