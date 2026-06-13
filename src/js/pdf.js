@@ -227,7 +227,7 @@ function cabecalhoPagina(doc, calculo, demo) {
   let y = Y_TOPO;
   doc.text(A4.w / 2, y, 'DEMONSTRATIVO DE CÁLCULO', { size: 12, bold: true, align: 'center' });
   y -= 14;
-  doc.text(A4.w / 2, y, 'débito alimentar', { size: 9.5, align: 'center' });
+  doc.text(A4.w / 2, y, 'Débito Alimentar', { size: 9.5, align: 'center' });
   y -= 8;
   doc.line(MARGEM, y, MARGEM + LARGURA, y, 0.8);
   y -= 16;
@@ -332,18 +332,24 @@ export function gerarPdfRito(calculo, demo, { agora = new Date() } = {}) {
     y -= 12;
   };
   const t = demo.totais;
+  let nSub = 0;
   const tem523 = demo.rito === 'exprop' && (t.multa523 > 0 || t.honorarios523 > 0);
   if (tem523) {
     linhaTotal('Total das parcelas (Tabela I)', t.parcelas);
     linhaTotal('(+) Multa de 10% — CPC, art. 523, § 1º', t.multa523);
     linhaTotal('(+) Honorários de 10% — CPC, art. 523, § 1º', t.honorarios523);
-    linhaTotal('Subtotal 01 (parcelas + art. 523, § 1º)', t.subtotal01);
+    linhaTotal(`Subtotal 0${++nSub} (parcelas + art. 523, § 1º)`, t.subtotal01);
   } else {
-    linhaTotal('Subtotal 01 — total das parcelas (Tabela I)', t.subtotal01);
+    linhaTotal(`Subtotal 0${++nSub} — total das parcelas (Tabela I)`, t.subtotal01);
   }
-  linhaTotal(`(+) Multa por descumprimento (${pctBR(t.multaDescumprimentoPct, 2)}%)`, t.multaDescumprimento);
-  linhaTotal(`(+) Honorários advocatícios (${pctBR(t.honorariosPct, 2)}%)`, t.honorarios);
-  linhaTotal('Subtotal 02', t.subtotal02);
+  if (t.multaDescumprimentoPct > 0) {
+    linhaTotal(`(+) Multa por descumprimento (${pctBR(t.multaDescumprimentoPct, 2)}%)`, t.multaDescumprimento);
+    linhaTotal(`Subtotal 0${++nSub}`, t.subtotal02);
+  }
+  if (t.honorariosPct > 0) {
+    linhaTotal(`(+) Honorários advocatícios (${pctBR(t.honorariosPct, 2)}%)`, t.honorarios);
+    linhaTotal(`Subtotal 0${++nSub}`, t.subtotal03);
+  }
   linhaTotal('(−) Pagamentos fora do intervalo (corrigidos)', t.pagamentosFora);
   doc.line(MARGEM, y + 8, MARGEM + LARGURA, y + 8, 0.8);
   linhaTotal('TOTAL GERAL', t.totalGeral, true);
@@ -361,10 +367,6 @@ export function gerarPdfRito(calculo, demo, { agora = new Date() } = {}) {
     notas.push(`Juros de mora simples de ${pctBR(Number(calculo.config.jurosFixoMensal) || 0, 2)}% ao mês, com termo inicial na competência de cada parcela.`);
   } else {
     notas.push('Cálculo sem incidência de juros de mora.');
-  }
-  const t2 = demo.totais;
-  if (demo.rito === 'exprop' && (t2.multa523 > 0 || t2.honorarios523 > 0)) {
-    notas.push('A multa e os honorários de 10% do art. 523, § 1º do CPC incidem apenas no rito da expropriação, têm por base o total das parcelas e integram o Subtotal 01.');
   }
   if (calculo.config.observacoes) {
     notas.push(`Observações: ${calculo.config.observacoes}`);

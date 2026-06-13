@@ -215,8 +215,9 @@ test('cascata da expropriação: art. 523 forma o Subtotal 01; multa e honorári
   assert.equal(r.totais.honorarios523, 300);           // 10% do total das parcelas (3000)
   assert.equal(r.totais.subtotal01, 3600);             // 3000 + 300 + 300 (parcelas + art. 523)
   assert.equal(r.totais.multaDescumprimento, 360);     // 10% do Subtotal 01 (3600)
+  assert.equal(r.totais.subtotal02, 3960);             // 3600 + 360
   assert.equal(r.totais.honorarios, 360);              // 10% do Subtotal 01 (mesma base, sem cascata)
-  assert.equal(r.totais.subtotal02, 4320);             // 3600 + 360 + 360
+  assert.equal(r.totais.subtotal03, 4320);             // 3960 + 360
   assert.equal(r.totais.pagamentosFora, foraCorrigido);
   assert.equal(r.totais.totalGeral, round2(4320 - foraCorrigido));
 });
@@ -234,8 +235,9 @@ test('coerção pessoal: multa e honorários incidem; sem multa/honorários do a
   assert.equal(r.totais.parcelas, 1000);
   assert.equal(r.totais.subtotal01, 1000);             // sem art. 523, = total das parcelas
   assert.equal(r.totais.multaDescumprimento, 100);     // 10% de 1000
+  assert.equal(r.totais.subtotal02, 1100);             // 1000 + 100
   assert.equal(r.totais.honorarios, 100);              // 10% de 1000 (mesma base, sem cascata)
-  assert.equal(r.totais.subtotal02, 1200);             // 1000 + 100 + 100
+  assert.equal(r.totais.subtotal03, 1200);             // 1100 + 100
   assert.equal(r.totais.multa523, undefined);          // art. 523 só na expropriação
   assert.equal(r.totais.pagamentosFora, round2(200 * 1.01));
   assert.equal(r.totais.totalGeral, round2(1200 - round2(200 * 1.01)));

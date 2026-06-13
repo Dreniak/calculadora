@@ -445,18 +445,24 @@ function renderDemonstrativo() {
         el('td', { text: rotulo }),
         el('td', { class: 'num', text: `R$ ${moedaBR(valor)}` }),
       ));
+    let nSub = 0;
     const tem523 = rito === 'exprop' && (t.multa523 > 0 || t.honorarios523 > 0);
     if (tem523) {
       linha('Total das parcelas (Tabela I)', t.parcelas);
       linha('(+) Multa 10% — art. 523, § 1º', t.multa523);
       linha('(+) Honorários 10% — art. 523, § 1º', t.honorarios523);
-      linha('Subtotal 01 (parcelas + art. 523, § 1º)', t.subtotal01);
+      linha(`Subtotal 0${++nSub} (parcelas + art. 523, § 1º)`, t.subtotal01);
     } else {
-      linha('Subtotal 01 — total das parcelas (Tabela I)', t.subtotal01);
+      linha(`Subtotal 0${++nSub} — total das parcelas (Tabela I)`, t.subtotal01);
     }
-    linha(`(+) Multa por descumprimento (${t.multaDescumprimentoPct}%)`, t.multaDescumprimento);
-    linha(`(+) Honorários advocatícios (${t.honorariosPct}%)`, t.honorarios);
-    linha('Subtotal 02', t.subtotal02);
+    if (t.multaDescumprimentoPct > 0) {
+      linha(`(+) Multa por descumprimento (${t.multaDescumprimentoPct}%)`, t.multaDescumprimento);
+      linha(`Subtotal 0${++nSub}`, t.subtotal02);
+    }
+    if (t.honorariosPct > 0) {
+      linha(`(+) Honorários advocatícios (${t.honorariosPct}%)`, t.honorarios);
+      linha(`Subtotal 0${++nSub}`, t.subtotal03);
+    }
     linha('(−) Pagamentos fora do intervalo (corrigidos)', t.pagamentosFora);
     linha('TOTAL GERAL', t.totalGeral, true);
     bloco.append(el('div', { class: 'totalizacao' }, el('table', {}, ...linhas)));

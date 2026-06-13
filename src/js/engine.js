@@ -355,25 +355,28 @@ export function calcular(calculo, snapshot) {
     // honorários de 10% do art. 523 (só na expropriação) têm por base o total
     // das parcelas e formam, somados a ele, o Subtotal 01. A multa por
     // descumprimento e os honorários advocatícios incidem sobre esse mesmo
-    // Subtotal 01 (em paralelo, sem cascata entre si) e os dois ritos.
+    // Subtotal 01 (a mesma base, sem cascata entre si) e geram os subtotais
+    // seguintes, numerados em sequência (Subtotal 02, 03).
     const multaPct = Number(config.multaDescumprimentoPct) || 0;
     const honPct = Number(config.honorariosPct) || 0;
     const multa523 = rito === 'exprop' && config.multa523 ? round2(parcelas * 0.10) : 0;
     const honorarios523 = rito === 'exprop' && config.honorarios523 ? round2(parcelas * 0.10) : 0;
     const subtotal01 = round2(parcelas + multa523 + honorarios523);
     const multaDescumprimento = round2(subtotal01 * (multaPct / 100));
+    const subtotal02 = round2(subtotal01 + multaDescumprimento);
     const honorarios = round2(subtotal01 * (honPct / 100));
-    const subtotal02 = round2(subtotal01 + multaDescumprimento + honorarios);
+    const subtotal03 = round2(subtotal02 + honorarios);
     const totais = {
       parcelas,
       subtotal01,
       multaDescumprimentoPct: multaPct,
       multaDescumprimento,
+      subtotal02,
       honorariosPct: honPct,
       honorarios,
-      subtotal02,
+      subtotal03,
       pagamentosFora,
-      totalGeral: round2(subtotal02 - pagamentosFora),
+      totalGeral: round2(subtotal03 - pagamentosFora),
     };
     if (rito === 'exprop') {
       totais.multa523 = multa523;
