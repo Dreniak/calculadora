@@ -88,16 +88,18 @@ test('PDF da expropriação: estrutura válida, xref e conteúdo', () => {
 
   // conteúdo essencial
   for (const trecho of [
-    'Tabela I', 'Tabela II', 'TOTAL GERAL', 'art. 523',
+    'DEMONSTRATIVO DE CÁLCULO', 'Tabela I', 'Tabela II', 'TOTAL GERAL', 'art. 523',
     '0001234-56.2024.8.27.2729', 'Fulana de Tal',
-    'ajustado manualmente', // nota do override
     'P\\xe1gina 1 de'.replace('\\xe1', String.fromCharCode(0xe1)),
   ]) {
     assert.ok(s.includes(trecho), `PDF deveria conter "${trecho}"`);
   }
+  // o cabeçalho antigo e a marcação de override foram removidos
+  assert.ok(!s.includes('PODER JUDICIÁRIO'));
+  assert.ok(!s.includes('ajustado manualmente'));
 });
 
-test('PDF da prisão: multa/honorários incidem, mas sem o art. 523', () => {
+test('PDF da coerção pessoal: multa/honorários incidem, mas sem o art. 523', () => {
   const calc = calculoDemo();
   const r = calcular(calc, snapshot());
   const bytes = gerarPdfRito(calc, r.ritos.prisao, { agora: new Date('2026-06-12T12:00:00') });

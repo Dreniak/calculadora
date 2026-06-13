@@ -223,7 +223,7 @@ test('cascata da expropriação: consectários antes do abatimento (decisão do 
   assert.equal(r.totais.totalGeral, round2(4230 - foraCorrigido));
 });
 
-test('prisão: multa e honorários incidem; sem multa/honorários do art. 523', () => {
+test('coerção pessoal: multa e honorários incidem; sem multa/honorários do art. 523', () => {
   const s = snapshotSintetico();
   const calc = calculoBase({
     config: { dataBase: '2025-06', juros: 'sem', multaDescumprimentoPct: 10, honorariosPct: 10 },

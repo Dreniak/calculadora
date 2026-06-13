@@ -1,8 +1,8 @@
 # Calculadora Judicial de Pensão Alimentícia
 
 Ferramenta de desktop (Windows, Tauri) para cálculo de débito de pensão
-alimentícia em execução, cobrindo os ritos da **prisão** (CPC, art. 528) e da
-**expropriação** (CPC, art. 523) numa única sessão, conforme o
+alimentícia em execução, cobrindo os ritos da **coerção pessoal** (CPC,
+art. 528) e da **expropriação** (CPC, art. 523) numa única sessão, conforme o
 [PRD v1.0](docs/PRD.md).
 
 ## Estrutura

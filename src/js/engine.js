@@ -8,7 +8,7 @@
 //   8.4 cascata de totalização: multa por descumprimento e honorários
 //       advocatícios incidem sobre ambos os ritos; multa e honorários do
 //       art. 523 só na expropriação, com base no Subtotal 01
-//   8.5 totalização do rito da prisão
+//   8.5 totalização do rito da coerção pessoal
 //
 // Módulo puro: sem DOM, sem Tauri. Usado pela UI e pelos testes (Node).
 
@@ -16,7 +16,7 @@ export const RITOS = ['exprop', 'prisao'];
 
 export const NOME_RITO = {
   exprop: 'Expropriação (CPC, art. 523)',
-  prisao: 'Prisão (CPC, art. 528)',
+  prisao: 'Coerção pessoal (CPC, art. 528)',
 };
 
 // ---------------------------------------------------------------------------

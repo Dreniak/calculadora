@@ -121,7 +121,7 @@ function renderValoresDevidos() {
       ? `${String(vd.valor).replace('.', ',')}% do SM`
       : `R$ ${moedaBR(Number(vd.valor))}`;
     corpo.append(el('tr', {},
-      el('td', {}, el('span', { class: `tag ${vd.rito}`, text: vd.rito === 'prisao' ? 'Prisão' : 'Exprop.' })),
+      el('td', {}, el('span', { class: `tag ${vd.rito}`, text: vd.rito === 'prisao' ? 'Coerção' : 'Exprop.' })),
       el('td', { text: comp }),
       el('td', { text: vd.forma === 'sm' ? '% do salário mínimo' : 'Valor fixo' }),
       el('td', { class: 'num', text: valor }),
@@ -179,7 +179,7 @@ function renderPagamentos() {
   const corpo = tbl.querySelector('tbody');
   corpo.replaceChildren();
   tbl.classList.toggle('oculto', calculo.pagamentos.length === 0);
-  const nomeImputacao = { auto: 'Automática', exprop: 'Expropriação', prisao: 'Prisão' };
+  const nomeImputacao = { auto: 'Automática', exprop: 'Expropriação', prisao: 'Coerção pessoal' };
   for (const pg of calculo.pagamentos) {
     const quando = pg.tipo === 'periodo'
       ? `${competenciaBR(pg.de)} a ${competenciaBR(pg.ate || pg.de)} (mensal)`
@@ -360,7 +360,7 @@ function renderDemonstrativo() {
     const demo = resultado.ritos[rito];
     const bloco = el('div', { class: 'demoRito' });
     bloco.append(el('h3', {},
-      el('span', { class: `tag ${rito}`, text: rito === 'prisao' ? 'Prisão' : 'Expropriação' }),
+      el('span', { class: `tag ${rito}`, text: rito === 'prisao' ? 'Coerção pessoal' : 'Expropriação' }),
       NOME_RITO[rito],
     ));
 
@@ -554,7 +554,7 @@ function renderBiblioteca() {
       el('div', { class: 'proc', text: c.processo || '(sem nº de processo)' }),
       el('div', { class: 'partes', text: `${c.requerente || '—'} × ${c.requerido || '—'}` }),
       el('div', {}, ...c.ritos.map((r) =>
-        el('span', { class: `tag ${r}`, text: r === 'prisao' ? 'Prisão' : 'Exprop.' }))),
+        el('span', { class: `tag ${r}`, text: r === 'prisao' ? 'Coerção' : 'Exprop.' }))),
       el('div', { class: 'acoesItem' },
         el('button', { text: 'Abrir', onclick: (e) => { e.stopPropagation(); abrir(c.id); } }),
         el('button', { text: 'Duplicar', onclick: (e) => { e.stopPropagation(); duplicar(c.id); } }),

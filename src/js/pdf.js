@@ -225,11 +225,9 @@ function cabecalhoTabela(doc, y, cols, titulo) {
 
 function cabecalhoPagina(doc, calculo, demo) {
   let y = Y_TOPO;
-  doc.text(A4.w / 2, y, 'PODER JUDICIÁRIO', { size: 11, bold: true, align: 'center' });
+  doc.text(A4.w / 2, y, 'DEMONSTRATIVO DE CÁLCULO', { size: 12, bold: true, align: 'center' });
   y -= 14;
-  doc.text(A4.w / 2, y, 'Demonstrativo de Cálculo — Execução de Alimentos', {
-    size: 9.5, align: 'center',
-  });
+  doc.text(A4.w / 2, y, 'débito alimentar', { size: 9.5, align: 'center' });
   y -= 8;
   doc.line(MARGEM, y, MARGEM + LARGURA, y, 0.8);
   y -= 16;
@@ -273,12 +271,10 @@ export function gerarPdfRito(calculo, demo, { agora = new Date() } = {}) {
   const cols1 = celulas(COLS_I);
   const tituloI = 'Tabela I — Parcelas do débito alimentar';
   y = cabecalhoTabela(doc, y, COLS_I, tituloI);
-  let temOverride = false;
   for (const l of demo.tabelaI) {
     garantir(12, () => cabecalhoTabela(doc, y, COLS_I, `${tituloI} (continuação)`));
-    if (l.override) temOverride = true;
     const vals = [
-      competenciaBR(l.ym) + (l.override ? ' *' : ''),
+      competenciaBR(l.ym),
       moedaBR(l.valorDevido),
       moedaBR(l.valorPago),
       moedaBR(l.saldo),
@@ -306,9 +302,8 @@ export function gerarPdfRito(calculo, demo, { agora = new Date() } = {}) {
     y = cabecalhoTabela(doc, y, COLS_II, tituloII);
     for (const l of demo.tabelaII) {
       garantir(12, () => cabecalhoTabela(doc, y, COLS_II, `${tituloII} (continuação)`));
-      if (l.override) temOverride = true;
       const vals = [
-        competenciaBR(l.ym) + (l.override ? ' *' : ''),
+        competenciaBR(l.ym),
         moedaBR(l.valorPago),
         fatorBR(l.fator),
         moedaBR(l.valorCorrigido),
@@ -365,16 +360,9 @@ export function gerarPdfRito(calculo, demo, { agora = new Date() } = {}) {
   } else {
     notas.push('Cálculo sem incidência de juros de mora.');
   }
-  notas.push('Pagamentos do mesmo mês são somados; pagamento dentro do período do débito abate a parcela da própria competência; pagamento fora do período é corrigido monetariamente e deduzido do total.');
   const t2 = demo.totais;
-  if ((t2.multaDescumprimentoPct || 0) > 0 || (t2.honorariosPct || 0) > 0) {
-    notas.push('A multa por descumprimento e os honorários advocatícios incidem sobre o débito antes do abatimento dos pagamentos fora do intervalo.');
-  }
   if (demo.rito === 'exprop' && (t2.multa523 > 0 || t2.honorarios523 > 0)) {
     notas.push('A multa e os honorários de 10% do art. 523, § 1º do CPC incidem apenas no rito da expropriação e têm por base o Subtotal 01.');
-  }
-  if (temOverride) {
-    notas.push('(*) Valor ajustado manualmente pelo elaborador do cálculo.');
   }
   if (calculo.config.observacoes) {
     notas.push(`Observações: ${calculo.config.observacoes}`);
