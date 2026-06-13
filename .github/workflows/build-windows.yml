@@ -1,0 +1,66 @@
+name: Build Windows installer
+
+# Gera o instalador Windows (.msi e .exe NSIS) num runner Windows, já que o
+# Tauri empacota para o sistema em que roda. Dispare manualmente em "Actions"
+# (workflow_dispatch) ou criando uma tag "v*" (que também publica um Release).
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write   # necessário para anexar o instalador ao Release
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configura Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Configura Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache do Rust
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri
+
+      - name: Instala dependências
+        run: npm ci
+
+      # Preenche seed/indices-seed.json com INPC/IPCA/Taxa Legal/SM oficiais.
+      # Não bloqueia o build se o IBGE/Bacen estiver indisponível no momento.
+      - name: Semeia a base de índices
+        run: npm run seed
+        continue-on-error: true
+
+      - name: Gera os ícones
+        run: node scripts/gen-icon.mjs
+
+      - name: Compila o instalador (Tauri)
+        run: npm run build
+
+      - name: Publica os instaladores como artefato
+        uses: actions/upload-artifact@v4
+        with:
+          name: instalador-windows
+          if-no-files-found: error
+          path: |
+            src-tauri/target/release/bundle/msi/*.msi
+            src-tauri/target/release/bundle/nsis/*-setup.exe
+
+      - name: Anexa ao Release (quando há tag)
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            src-tauri/target/release/bundle/msi/*.msi
+            src-tauri/target/release/bundle/nsis/*-setup.exe

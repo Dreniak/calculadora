@@ -41,6 +41,23 @@ No modo protótipo (navegador) os cálculos ficam em `localStorage` e o PDF é
 baixado; no aplicativo os cálculos são arquivos `.json` na pasta configurada e
 o PDF é gravado direto na pasta de PDFs, sem diálogo (RF-6).
 
+## Distribuição (instalador Windows)
+
+O Tauri empacota para o sistema em que roda: o `.msi`/`.exe` do Windows precisa
+ser gerado **no Windows**. Para isso há o workflow
+[`.github/workflows/build-windows.yml`](.github/workflows/build-windows.yml),
+que compila num runner `windows-latest` (roda `seed` + `gen-icon` + `tauri build`)
+e publica o instalador.
+
+- **Build sob demanda:** aba **Actions** → *Build Windows installer* → *Run
+  workflow*. O `.msi` e o `-setup.exe` ficam disponíveis como artefato da execução.
+- **Release versionado:** crie e envie uma tag `v*` (ex.: `git tag v1.0.0 &&
+  git push origin v1.0.0`); o mesmo workflow anexa os instaladores a um Release.
+
+Os artefatos saem em `src-tauri/target/release/bundle/msi/` e `.../bundle/nsis/`.
+Sem certificado de *code signing*, o SmartScreen exibirá o aviso de editor
+desconhecido na instalação.
+
 ## Semeadura da base de índices
 
 Antes de empacotar o instalador, rode (com internet):
