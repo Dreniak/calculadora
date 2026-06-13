@@ -74,12 +74,17 @@ body { display: flex; min-height: 100vh; }
   color: #fff;
 }
 #buscaBiblioteca::placeholder { color: rgba(255 255 255 / 0.6); }
+/* a lista é posicionada de forma absoluta para não inflar a sidebar: a
+   altura da barra passa a ser ditada pela seção central, e a lista rola
+   internamente dentro desse limite */
+.listaWrap { position: relative; flex: 1; min-height: 0; }
 #listaCalculos {
   list-style: none;
   margin: 0;
   padding: 0 8px;
   overflow-y: auto;
-  flex: 1;
+  position: absolute;
+  inset: 0;
 }
 #listaCalculos li {
   background: rgba(255 255 255 / 0.07);
