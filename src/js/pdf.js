@@ -320,7 +320,7 @@ export function gerarPdfRito(calculo, demo, { agora = new Date() } = {}) {
   }
 
   // ---- Totalização (Seção 8) ---------------------------------------------
-  garantir(demo.rito === 'exprop' ? 150 : 110);
+  garantir(demo.rito === 'exprop' ? 178 : 138);
   doc.text(MARGEM, y, 'Totalização', { size: 9, bold: true });
   y -= 14;
   const linhaTotal = (rotulo, valor, destaque = false) => {
@@ -347,7 +347,9 @@ export function gerarPdfRito(calculo, demo, { agora = new Date() } = {}) {
     linhaTotal(`Subtotal 0${++nSub}`, t.subtotalConsectarios);
   }
   linhaTotal('(−) Pagamentos fora do intervalo (corrigidos)', t.pagamentosFora);
+  y -= 12;                                          // linha em branco após os pagamentos fora
   doc.line(MARGEM, y + 8, MARGEM + LARGURA, y + 8, 0.8);
+  y -= 14;                                          // espaço em branco antes do TOTAL GERAL
   linhaTotal('TOTAL GERAL', t.totalGeral, true);
   y -= 8;
 
