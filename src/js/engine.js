@@ -351,32 +351,30 @@ export function calcular(calculo, snapshot) {
     };
 
     // 8.4 — todos os consectários incidem ANTES do abatimento dos pagamentos
-    // fora do intervalo (decisão de produto registrada no PRD). A multa e os
-    // honorários de 10% do art. 523 (só na expropriação) têm por base o total
-    // das parcelas e formam, somados a ele, o Subtotal 01. A multa por
-    // descumprimento e os honorários advocatícios incidem sobre esse mesmo
-    // Subtotal 01 (a mesma base, sem cascata entre si) e geram os subtotais
-    // seguintes, numerados em sequência (Subtotal 02, 03).
+    // fora do intervalo (decisão de produto registrada no PRD). Cascata:
+    //   Subtotal 01 = total das parcelas (Tabela I);
+    //   (+) multa e honorários de 10% do art. 523 (só na expropriação, 10% do
+    //       Subtotal 01 cada) => subtotalArt523;
+    //   (+) multa por descumprimento e honorários advocatícios, ambos sobre o
+    //       subtotalArt523 (mesma base, sem cascata entre si) => subtotalConsectarios.
     const multaPct = Number(config.multaDescumprimentoPct) || 0;
     const honPct = Number(config.honorariosPct) || 0;
     const multa523 = rito === 'exprop' && config.multa523 ? round2(parcelas * 0.10) : 0;
     const honorarios523 = rito === 'exprop' && config.honorarios523 ? round2(parcelas * 0.10) : 0;
-    const subtotal01 = round2(parcelas + multa523 + honorarios523);
-    const multaDescumprimento = round2(subtotal01 * (multaPct / 100));
-    const subtotal02 = round2(subtotal01 + multaDescumprimento);
-    const honorarios = round2(subtotal01 * (honPct / 100));
-    const subtotal03 = round2(subtotal02 + honorarios);
+    const subtotalArt523 = round2(parcelas + multa523 + honorarios523);
+    const multaDescumprimento = round2(subtotalArt523 * (multaPct / 100));
+    const honorarios = round2(subtotalArt523 * (honPct / 100));
+    const subtotalConsectarios = round2(subtotalArt523 + multaDescumprimento + honorarios);
     const totais = {
       parcelas,
-      subtotal01,
       multaDescumprimentoPct: multaPct,
       multaDescumprimento,
-      subtotal02,
       honorariosPct: honPct,
       honorarios,
-      subtotal03,
+      subtotalArt523,
+      subtotalConsectarios,
       pagamentosFora,
-      totalGeral: round2(subtotal03 - pagamentosFora),
+      totalGeral: round2(subtotalConsectarios - pagamentosFora),
     };
     if (rito === 'exprop') {
       totais.multa523 = multa523;

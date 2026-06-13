@@ -334,21 +334,17 @@ export function gerarPdfRito(calculo, demo, { agora = new Date() } = {}) {
   const t = demo.totais;
   let nSub = 0;
   const tem523 = demo.rito === 'exprop' && (t.multa523 > 0 || t.honorarios523 > 0);
+  const temConsectarios = t.multaDescumprimentoPct > 0 || t.honorariosPct > 0;
+  linhaTotal(`Subtotal 0${++nSub} — total das parcelas (Tabela I)`, t.parcelas);
   if (tem523) {
-    linhaTotal('Total das parcelas (Tabela I)', t.parcelas);
     linhaTotal('(+) Multa de 10% — CPC, art. 523, § 1º', t.multa523);
     linhaTotal('(+) Honorários de 10% — CPC, art. 523, § 1º', t.honorarios523);
-    linhaTotal(`Subtotal 0${++nSub} (parcelas + art. 523, § 1º)`, t.subtotal01);
-  } else {
-    linhaTotal(`Subtotal 0${++nSub} — total das parcelas (Tabela I)`, t.subtotal01);
+    linhaTotal(`Subtotal 0${++nSub}`, t.subtotalArt523);
   }
-  if (t.multaDescumprimentoPct > 0) {
-    linhaTotal(`(+) Multa por descumprimento (${pctBR(t.multaDescumprimentoPct, 2)}%)`, t.multaDescumprimento);
-    linhaTotal(`Subtotal 0${++nSub}`, t.subtotal02);
-  }
-  if (t.honorariosPct > 0) {
-    linhaTotal(`(+) Honorários advocatícios (${pctBR(t.honorariosPct, 2)}%)`, t.honorarios);
-    linhaTotal(`Subtotal 0${++nSub}`, t.subtotal03);
+  if (temConsectarios) {
+    if (t.multaDescumprimentoPct > 0) linhaTotal(`(+) Multa por descumprimento (${pctBR(t.multaDescumprimentoPct, 2)}%)`, t.multaDescumprimento);
+    if (t.honorariosPct > 0) linhaTotal(`(+) Honorários advocatícios (${pctBR(t.honorariosPct, 2)}%)`, t.honorarios);
+    linhaTotal(`Subtotal 0${++nSub}`, t.subtotalConsectarios);
   }
   linhaTotal('(−) Pagamentos fora do intervalo (corrigidos)', t.pagamentosFora);
   doc.line(MARGEM, y + 8, MARGEM + LARGURA, y + 8, 0.8);
