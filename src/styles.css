@@ -19,13 +19,12 @@
 
 html, body {
   margin: 0;
-  height: 100%;
   font: 14px/1.45 "Segoe UI", system-ui, -apple-system, sans-serif;
   color: var(--texto);
   background: var(--fundo);
 }
 
-body { display: flex; }
+body { display: flex; min-height: 100vh; }
 
 :focus-visible {
   outline: 3px solid var(--foco);
