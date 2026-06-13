@@ -54,8 +54,9 @@ test('fluxo principal no navegador (modo protótipo)', async () => {
   doc.getElementById('vdValor').value = '500';
   doc.getElementById('formVD').dispatchEvent(new win.Event('submit', { bubbles: true, cancelable: true }));
 
-  // consectários ficam sempre visíveis (RF-1)
-  assert.ok(!doc.getElementById('consectarios').classList.contains('oculto'));
+  // campos de consectários integrados à seção 1 (RF-1)
+  assert.ok(doc.getElementById('cMultaPct'));
+  assert.ok(doc.getElementById('cMulta523'));
 
   // pagamento dentro do período
   doc.getElementById('pgTipo').value = 'data';

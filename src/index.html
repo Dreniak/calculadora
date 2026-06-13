@@ -52,20 +52,17 @@
           <input id="cJurosFixo" type="number" step="0.01" min="0" value="1" />
         </label>
       </div>
-      <fieldset id="consectarios">
-        <legend>Consectários legais</legend>
-        <div class="grade4">
-          <label>Multa por descumprimento (%)
-            <input id="cMultaPct" type="number" step="0.01" min="0" value="0" /></label>
-          <label>Honorários advocatícios (%)
-            <input id="cHonPct" type="number" step="0.01" min="0" value="0" /></label>
-          <label class="caixinha"><input id="cMulta523" type="checkbox" /> Multa 10% (art. 523, § 1º)</label>
-          <label class="caixinha"><input id="cHon523" type="checkbox" /> Honorários 10% (art. 523, § 1º)</label>
-        </div>
-        <p class="nota">A multa por descumprimento e os honorários advocatícios incidem
-          sobre ambos os ritos, quando preenchidos. A multa e os honorários do art. 523,
-          § 1º incidem apenas no rito da expropriação e têm por base o Subtotal 01.</p>
-      </fieldset>
+      <div class="grade4">
+        <label>Multa por descumprimento (%)
+          <input id="cMultaPct" type="number" step="0.01" min="0" value="0" /></label>
+        <label>Honorários advocatícios (%)
+          <input id="cHonPct" type="number" step="0.01" min="0" value="0" /></label>
+        <label class="caixinha"><input id="cMulta523" type="checkbox" /> Multa 10% (art. 523, § 1º)</label>
+        <label class="caixinha"><input id="cHon523" type="checkbox" /> Honorários 10% (art. 523, § 1º)</label>
+      </div>
+      <p class="nota">A multa por descumprimento e os honorários advocatícios incidem
+        sobre ambos os ritos, quando preenchidos. A multa e os honorários do art. 523,
+        § 1º incidem apenas no rito da expropriação e têm por base o Subtotal 01.</p>
       <label>Observações (constam no PDF)
         <textarea id="cObs" rows="2"></textarea></label>
     </section>
