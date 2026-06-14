@@ -107,6 +107,12 @@ export async function atualizarIndices() {
   return { ok: false, mensagem: 'Atualização automática disponível apenas no aplicativo instalado.' };
 }
 
+/** Abre o seletor nativo de pasta do sistema. Só disponível no aplicativo. */
+export async function escolherPasta() {
+  if (ehTauri) return invoke('escolher_pasta');
+  return null;
+}
+
 /** RF-9 — payload {processo, orgao, requerente, requerido} vindo da extensão. */
 export function aoPreencherProcesso(cb) {
   if (ehTauri && window.__TAURI__.event?.listen) {

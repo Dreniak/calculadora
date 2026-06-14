@@ -1,4 +1,4 @@
-# Calculadora Judicial de Pensão Alimentícia
+# SuperCalculadora de Alimentos 3.000
 
 Ferramenta de desktop (Windows, Tauri) para cálculo de débito de pensão
 alimentícia em execução, cobrindo os ritos da **coerção pessoal** (CPC,

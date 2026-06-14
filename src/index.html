@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Calculadora Judicial de Pensão Alimentícia</title>
+  <title>SuperCalculadora de Alimentos 3.000</title>
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
@@ -27,7 +27,7 @@
   </aside>
 
   <main>
-    <h1>Calculadora Judicial de Pensão Alimentícia
+    <h1>SuperCalculadora de Alimentos 3.000
       <span id="seloPrototipo" class="selo oculto">modo protótipo (navegador)</span>
     </h1>
     <div id="avisos" class="avisos oculto" role="alert"></div>
@@ -62,9 +62,6 @@
         <label class="caixinha"><input id="cMulta523" type="checkbox" /> Multa 10% (art. 523, § 1º)</label>
         <label class="caixinha"><input id="cHon523" type="checkbox" /> Honorários 10% (art. 523, § 1º)</label>
       </div>
-      <p class="nota">A multa por descumprimento e os honorários advocatícios incidem
-        sobre ambos os ritos, quando preenchidos. A multa e os honorários do art. 523,
-        § 1º incidem apenas no rito da expropriação e têm por base o Subtotal 01.</p>
       <label>Observações (constam no PDF)
         <textarea id="cObs" rows="2"></textarea></label>
     </section>
@@ -142,8 +139,20 @@
   <dialog id="dlgConfig">
     <form method="dialog">
       <h2>Configurações</h2>
-      <label>Pasta dos cálculos (.json) <input id="cfgPastaCalc" type="text" placeholder="padrão do aplicativo" /></label>
-      <label>Pasta dos PDFs <input id="cfgPastaPdf" type="text" placeholder="padrão do aplicativo" /></label>
+      <p id="cfgPrimeiraVez" class="nota oculto">Bem-vindo! Antes de começar, escolha onde os
+        cálculos (.json) e os PDFs serão salvos.</p>
+      <label>Pasta dos cálculos (.json)
+        <span class="campoPasta">
+          <input id="cfgPastaCalc" type="text" placeholder="nenhuma pasta selecionada" />
+          <button type="button" id="btnPastaCalc" class="suave">Selecionar…</button>
+        </span>
+      </label>
+      <label>Pasta dos PDFs
+        <span class="campoPasta">
+          <input id="cfgPastaPdf" type="text" placeholder="nenhuma pasta selecionada" />
+          <button type="button" id="btnPastaPdf" class="suave">Selecionar…</button>
+        </span>
+      </label>
       <label class="caixinha"><input id="cfgAutoAtualiza" type="checkbox" checked />
         Atualizar índices automaticamente quando houver internet</label>
       <label>Porta do serviço local (integração e-Proc)
@@ -151,6 +160,18 @@
       <menu>
         <button value="cancel" class="suave">Cancelar</button>
         <button id="btnSalvarConfig" value="default" class="primario">Salvar</button>
+      </menu>
+    </form>
+  </dialog>
+
+  <!-- Confirmação genérica (estilo dos demais diálogos) -->
+  <dialog id="dlgConfirma">
+    <form method="dialog">
+      <h2 id="confirmaTitulo">Confirmação</h2>
+      <p id="confirmaMsg"></p>
+      <menu>
+        <button value="cancel" class="suave">Cancelar</button>
+        <button id="confirmaOk" value="ok" class="primario">Confirmar</button>
       </menu>
     </form>
   </dialog>

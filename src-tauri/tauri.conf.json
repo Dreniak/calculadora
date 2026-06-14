@@ -1,6 +1,6 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "Calculadora de Pensão Alimentícia",
+  "productName": "SuperCalculadora de Alimentos 3.000",
   "version": "1.0.0",
   "identifier": "br.jus.tjto.calculadora-pensao",
   "build": {
@@ -10,7 +10,7 @@
     "withGlobalTauri": true,
     "windows": [
       {
-        "title": "Calculadora Judicial de Pensão Alimentícia",
+        "title": "SuperCalculadora de Alimentos 3.000",
         "width": 1280,
         "height": 860,
         "minWidth": 1024,

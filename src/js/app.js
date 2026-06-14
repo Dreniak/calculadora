@@ -603,7 +603,8 @@ async function duplicar(id) {
 }
 
 async function excluir(id) {
-  if (!window.confirm('Excluir este cálculo definitivamente?')) return;
+  const ok = await confirmar('Excluir este cálculo definitivamente?', 'Excluir');
+  if (!ok) return;
   try {
     await backend.excluirCalculo(id);
     if (calculo.id === id) novo();
@@ -614,14 +615,40 @@ async function excluir(id) {
   }
 }
 
+// Confirmação no estilo dos demais diálogos; resolve true ao confirmar.
+function confirmar(mensagem, rotuloOk = 'Confirmar') {
+  return new Promise((resolve) => {
+    const dlg = $('dlgConfirma');
+    $('confirmaMsg').textContent = mensagem;
+    $('confirmaOk').textContent = rotuloOk;
+    dlg.returnValue = 'cancel';
+    const aoFechar = () => {
+      dlg.removeEventListener('close', aoFechar);
+      resolve(dlg.returnValue === 'ok');
+    };
+    dlg.addEventListener('close', aoFechar);
+    dlg.showModal();
+  });
+}
+
 // --------------------------- configurações ----------------------------------
-$('btnConfig').addEventListener('click', () => {
+function abrirConfig(primeiraVez = false) {
   $('cfgPastaCalc').value = prefs.pastaCalculos || '';
   $('cfgPastaPdf').value = prefs.pastaPdf || '';
   $('cfgAutoAtualiza').checked = prefs.atualizacaoAutomatica !== false;
   $('cfgPorta').value = prefs.portaEntrada || 48591;
+  $('cfgPrimeiraVez').classList.toggle('oculto', !primeiraVez);
   $('dlgConfig').showModal();
-});
+}
+$('btnConfig').addEventListener('click', () => abrirConfig(false));
+
+async function escolherPastaPara(idCampo) {
+  const dir = await backend.escolherPasta();
+  if (dir) $(idCampo).value = dir;
+  else if (!backend.ehTauri) toast('Seleção de pasta disponível apenas no aplicativo instalado.', true);
+}
+$('btnPastaCalc').addEventListener('click', () => escolherPastaPara('cfgPastaCalc'));
+$('btnPastaPdf').addEventListener('click', () => escolherPastaPara('cfgPastaPdf'));
 
 $('dlgConfig').addEventListener('close', async () => {
   if ($('dlgConfig').returnValue !== 'default') return;
@@ -747,6 +774,11 @@ async function iniciar() {
   preencherFormulario();
   aposMudanca();
   await carregarBiblioteca();
+  // Primeira execução no aplicativo: ainda não há pastas configuradas, então
+  // solicita ao usuário as pastas preferidas (não há pasta padrão).
+  if (backend.ehTauri && (!prefs.pastaCalculos || !prefs.pastaPdf)) {
+    abrirConfig(true);
+  }
   // RNF-3 — atualização automática silenciosa quando houver internet
   if (backend.ehTauri && prefs.atualizacaoAutomatica !== false) {
     backend.atualizarIndices().then(async (r) => {

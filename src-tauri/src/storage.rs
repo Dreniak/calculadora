@@ -48,21 +48,32 @@ pub fn gravar_prefs(app: &tauri::AppHandle, prefs: &Prefs) -> Result<(), Erro> {
     Ok(())
 }
 
-fn pasta_de(opcao: &Option<String>, app: &tauri::AppHandle, padrao: &str) -> Result<PathBuf, Erro> {
-    let dir = match opcao.as_deref().filter(|s| !s.trim().is_empty()) {
-        Some(p) => PathBuf::from(p),
-        None => dir_dados(app)?.join(padrao),
-    };
+/// Resolve uma pasta configurada pelo usuário. Não há pasta padrão: se não
+/// estiver configurada (primeira execução), devolve erro — a UI solicita as
+/// pastas preferidas antes de salvar.
+fn pasta_configurada(opcao: &Option<String>, msg: &str) -> Result<PathBuf, Erro> {
+    let caminho = opcao
+        .as_deref()
+        .map(str::trim)
+        .filter(|s| !s.is_empty())
+        .ok_or(msg)?;
+    let dir = PathBuf::from(caminho);
     fs::create_dir_all(&dir)?;
     Ok(dir)
 }
 
 pub fn pasta_calculos(app: &tauri::AppHandle) -> Result<PathBuf, Erro> {
-    pasta_de(&ler_prefs(app)?.pasta_calculos, app, "calculos")
+    pasta_configurada(
+        &ler_prefs(app)?.pasta_calculos,
+        "Pasta dos cálculos não configurada. Defina-a em Configurações.",
+    )
 }
 
 pub fn pasta_pdf(app: &tauri::AppHandle) -> Result<PathBuf, Erro> {
-    pasta_de(&ler_prefs(app)?.pasta_pdf, app, "pdfs")
+    pasta_configurada(
+        &ler_prefs(app)?.pasta_pdf,
+        "Pasta dos PDFs não configurada. Defina-a em Configurações.",
+    )
 }
 
 /// Garante que o nome usado em disco vem do UUID do cálculo (sem injeção
@@ -77,7 +88,12 @@ fn id_seguro(id: &str) -> Result<&str, Erro> {
 
 pub fn listar_calculos(app: &tauri::AppHandle) -> Result<Vec<serde_json::Value>, Erro> {
     let mut out = Vec::new();
-    for entrada in fs::read_dir(pasta_calculos(app)?)? {
+    // pasta ainda não configurada (primeira execução): biblioteca vazia
+    let pasta = match pasta_calculos(app) {
+        Ok(p) => p,
+        Err(_) => return Ok(out),
+    };
+    for entrada in fs::read_dir(pasta)? {
         let caminho = entrada?.path();
         if caminho.extension().and_then(|e| e.to_str()) != Some("json") {
             continue;

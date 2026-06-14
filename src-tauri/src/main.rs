@@ -13,6 +13,7 @@ use storage::Prefs;
 
 fn main() {
     tauri::Builder::default()
+        .plugin(tauri_plugin_dialog::init())
         .setup(|app| {
             let handle = app.handle().clone();
             // semeia a base de índices na primeira execução (RNF-2)
@@ -32,6 +33,7 @@ fn main() {
             salvar_calculo,
             excluir_calculo,
             salvar_pdf,
+            escolher_pasta,
             obter_indices,
             salvar_indices,
             atualizar_indices,
@@ -76,6 +78,18 @@ fn excluir_calculo(app: tauri::AppHandle, id: String) -> CmdResult<()> {
 #[tauri::command]
 fn salvar_pdf(app: tauri::AppHandle, nome: String, dados_b64: String) -> CmdResult<String> {
     storage::salvar_pdf(&app, &nome, &dados_b64).map_err(|e| e.to_string())
+}
+
+/// Abre o seletor nativo de pasta do sistema. Roda fora da thread principal
+/// (comando assíncrono) por causa da API bloqueante do diálogo.
+#[tauri::command(async)]
+fn escolher_pasta(app: tauri::AppHandle) -> Option<String> {
+    use tauri_plugin_dialog::DialogExt;
+    app.dialog()
+        .file()
+        .blocking_pick_folder()
+        .and_then(|caminho| caminho.into_path().ok())
+        .map(|p| p.to_string_lossy().into_owned())
 }
 
 #[tauri::command]
