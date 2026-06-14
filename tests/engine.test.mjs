@@ -148,7 +148,7 @@ test('pagamentos do mesmo mês são somados', () => {
   assert.equal(m.get('auto|2025-03').valor, 200);
 });
 
-test('imputação: dentro do período abate o mês; fora vai para Tabela II da expropriação', () => {
+test('imputação: dentro do período abate o mês; excedente vira crédito; fora vai para a Tabela II', () => {
   const s = snapshotSintetico();
   const porRito = expandirValoresDevidos(
     [
@@ -158,16 +158,33 @@ test('imputação: dentro do período abate o mês; fora vai para Tabela II da e
     s,
   );
   const pagos = somarPagamentosPorMes([
-    { tipo: 'data', data: '2025-02-10', valor: 300 },  // dentro (exprop)
-    { tipo: 'data', data: '2024-06-10', valor: 100 },  // fora => exprop (preferência)
-    { tipo: 'data', data: '2025-04-10', valor: 800 },  // dentro prisão + excedente 300 fora
+    { de: '2025-02-10', valor: 300 },  // dentro (exprop)
+    { de: '2024-06-10', valor: 100 },  // fora => exprop (preferência)
+    { de: '2025-04-10', valor: 800 },  // dentro prisão + excedente 300 na própria competência
   ]);
   const { pagosMes, fora } = imputarPagamentos(porRito, pagos, ['exprop', 'prisao']);
   assert.equal(pagosMes.exprop.get('2025-02'), 300);
-  assert.equal(pagosMes.prisao.get('2025-04'), 500);
+  // o pagamento de 800 fica integralmente em 2025-04 (devido 500): crédito de 300
+  assert.equal(pagosMes.prisao.get('2025-04'), 800);
   assert.equal(fora.exprop.get('2024-06'), 100);
-  // excedente do mês 2025-04 (300) vai para fora, preferindo expropriação
-  assert.equal(fora.exprop.get('2025-04'), 300);
+  // o excedente não vai mais para a Tabela II — permanece na competência
+  assert.equal(fora.exprop.has('2025-04'), false);
+  assert.equal(fora.prisao.has('2025-04'), false);
+});
+
+test('saldo negativo (crédito) é mantido e corrigido na competência', () => {
+  const s = snapshotSintetico();
+  const calc = calculoBase({
+    config: { dataBase: '2025-06', juros: 'sem' },
+    valoresDevidos: [
+      { id: '1', rito: 'exprop', de: '2025-04', ate: null, forma: 'fixo', valor: 455.40 },
+    ],
+    pagamentos: [{ id: 'p', de: '2025-04-15', valor: 500 }],
+  });
+  const linha = calcular(calc, s).ritos.exprop.tabelaI[0];
+  assert.equal(linha.valorPago, 500);            // pagamento integral, não limitado ao devido
+  assert.equal(linha.saldo, -44.6);              // crédito do executado
+  assert.equal(linha.valorCorrigido, round2(-44.6 * linha.fator));
 });
 
 test('imputação manual força o rito', () => {

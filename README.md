@@ -83,9 +83,10 @@ Decisões do PRD (Seção 8) e convenções de implementação registradas:
   sobre o valor corrigido. Transições com pro rata die: 01/2003
   (10 dias a 0,5% + 21 dias a 1%) e 08/2024 (29 dias a 1% + Taxa Legal
   parcial de 30–31/08 quando constar da base).
-- Pagamentos fora do período são apenas **corrigidos** (sem juros) antes da
-  dedução; excedente de pagamento sobre a parcela do mês é tratado como
-  pagamento fora do período do mesmo rito (não gera saldo negativo).
+- Pagamento em mês sem parcela devida (fora do período) é apenas **corrigido**
+  (sem juros) e deduzido do total. Quando o pagamento de um mês supera a parcela
+  devida, o excedente permanece na própria competência como **crédito do
+  executado** (saldo negativo), corrigido junto com as demais parcelas.
 - Consectários da expropriação incidem **antes** do abatimento dos pagamentos
   fora do intervalo (decisão de produto, Seção 8.4 do PRD).
 - Mês sem índice na base contribui com 0% e gera aviso visível na UI.

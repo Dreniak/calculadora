@@ -231,6 +231,7 @@ table.lista td, table.demo td {
   vertical-align: middle;
 }
 th.num, td.num { text-align: right; font-variant-numeric: tabular-nums; }
+th.acoes, td.acoes { text-align: right; white-space: nowrap; width: 1%; }
 table.demo tfoot td { font-weight: 600; }
 tr.editada td { background: var(--editado); }
 

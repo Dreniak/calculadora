@@ -59,8 +59,7 @@ test('fluxo principal no navegador (modo protótipo)', async () => {
   assert.ok(doc.getElementById('cMulta523'));
 
   // pagamento dentro do período
-  doc.getElementById('pgTipo').value = 'data';
-  doc.getElementById('pgData').value = '2025-05-10';
+  doc.getElementById('pgDe').value = '2025-05-10';
   doc.getElementById('pgValor').value = '200';
   doc.getElementById('formPg').dispatchEvent(new win.Event('submit', { bubbles: true, cancelable: true }));
 

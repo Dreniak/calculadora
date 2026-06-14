@@ -195,10 +195,11 @@ export function somarPagamentosPorMes(pagamentos) {
   const porMes = new Map();
   for (const p of pagamentos || []) {
     const rito = p.rito || 'auto';
-    const meses =
-      p.tipo === 'periodo'
-        ? competencias(p.de, p.ate || p.de)
-        : [String(p.data).slice(0, 7)];
+    // "De" é uma data (AAAA-MM-DD); sem "Até", é um pagamento único na
+    // competência de "De"; com "Até", repete o valor a cada competência do
+    // intervalo. (`data` é aceito por compatibilidade com cálculos antigos.)
+    const inicio = String(p.de || p.data || '').slice(0, 7);
+    const meses = p.ate ? competencias(inicio, String(p.ate).slice(0, 7)) : [inicio];
     for (const ym of meses) {
       const chave = `${rito}|${ym}`;
       const atual = porMes.get(chave) || { ym, rito, valor: 0 };
@@ -212,10 +213,11 @@ export function somarPagamentosPorMes(pagamentos) {
 /**
  * Imputação dos pagamentos (8.3):
  *  - dentro do período do débito, abate a parcela do próprio mês;
- *  - fora do período, vai para a Tabela II (corrigido e deduzido do total),
- *    imputado preferencialmente à expropriação quando houver os dois ritos;
- *  - excedente sobre a parcela do mês é tratado como pagamento fora do
- *    período do mesmo rito (não gera saldo devedor negativo);
+ *  - excedente sobre a parcela do mês (pago > devido) permanece na própria
+ *    competência como crédito do executado (saldo negativo, corrigido junto
+ *    com as demais parcelas — não é defasado);
+ *  - pagamento em mês sem parcela devida vai para a Tabela II (corrigido e
+ *    deduzido do total), imputado preferencialmente à expropriação;
  *  - rito explícito no lançamento ("prisao"/"exprop") força a imputação.
  *
  * Retorna { pagosMes: {rito: Map<ym, valor>}, fora: {rito: Map<ym, valor>} }.
@@ -232,25 +234,30 @@ export function imputarPagamentos(porRito, pagamentosMes, ritosAtivos) {
 
   for (const { ym, rito, valor } of pagamentosMes.values()) {
     let restante = valor;
-    // ordem de tentativa de abatimento dentro do mês
-    const candidatos =
-      rito === 'auto' ? ['exprop', 'prisao'] : [rito];
-    for (const r of candidatos) {
+    const candidatos = rito === 'auto' ? ['exprop', 'prisao'] : [rito];
+    // ritos candidatos com parcela devida nesse mês (dentro do período)
+    const ritosComDevido = candidatos.filter(
+      (r) => ritosAtivos.includes(r) && porRito[r].has(ym),
+    );
+    // 1) abate o devido de cada rito do mês, na ordem de preferência
+    for (const r of ritosComDevido) {
       if (restante <= 0) break;
-      if (!ritosAtivos.includes(r)) continue;
-      const devido = porRito[r].get(ym);
-      if (devido == null) continue;
       const jaPago = pagosMes[r].get(ym) || 0;
-      const abatimento = Math.min(restante, Math.max(0, devido - jaPago));
+      const abatimento = Math.min(restante, Math.max(0, porRito[r].get(ym) - jaPago));
       if (abatimento > 0) {
         addPago(r, ym, abatimento);
         restante = round2(restante - abatimento);
       }
     }
     if (restante > 0) {
-      const r =
-        rito !== 'auto' && ritosAtivos.includes(rito) ? rito : ritoForaPadrao;
-      addFora(r, ym, restante);
+      if (ritosComDevido.length) {
+        // excedente na própria competência: crédito (saldo negativo)
+        addPago(ritosComDevido[0], ym, restante);
+      } else {
+        // mês sem parcela devida: fora do intervalo (Tabela II)
+        const r = rito !== 'auto' && ritosAtivos.includes(rito) ? rito : ritoForaPadrao;
+        addFora(r, ym, restante);
+      }
     }
   }
   return { pagosMes, fora };
@@ -298,7 +305,8 @@ export function calcular(calculo, snapshot) {
         ov.valorDevido != null ? round2(Number(ov.valorDevido)) : valorDevidoCalc;
       const valorPago =
         ov.valorPago != null ? round2(Number(ov.valorPago)) : valorPagoCalc;
-      const saldo = round2(Math.max(0, valorDevido - valorPago));
+      // saldo pode ficar negativo: crédito do executado na competência
+      const saldo = round2(valorDevido - valorPago);
       const fator = fatorCorrecao(snapshot, ym, dataBase, avisos);
       const valorCorrigido = round2(saldo * fator);
       const pctJuros = jurosPct(snapshot, config, ym, dataBase, avisos);

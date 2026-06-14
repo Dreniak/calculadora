@@ -101,10 +101,6 @@ function atualizarVisibilidades() {
   $('rotJurosFixo').classList.toggle('oculto', $('cJuros').value !== 'fixo');
   $('rotVdValor').firstChild.textContent =
     $('vdForma').value === 'sm' ? '% do salário mínimo ' : 'Valor (R$) ';
-  const periodo = $('pgTipo').value === 'periodo';
-  $('rotPgData').classList.toggle('oculto', periodo);
-  $('rotPgDe').classList.toggle('oculto', !periodo);
-  $('rotPgAte').classList.toggle('oculto', !periodo);
 }
 
 // --------------------------- valores devidos (RF-2) -------------------------
@@ -126,7 +122,7 @@ function renderValoresDevidos() {
       el('td', { text: vd.forma === 'sm' ? '% do salário mínimo' : 'Valor fixo' }),
       el('td', { class: 'num', text: valor }),
       el('td', { text: vd.descricao || '' }),
-      el('td', {},
+      el('td', { class: 'acoes' },
         el('button', { class: 'mini suave', text: 'Editar', onclick: () => editarVD(vd.id) }),
         ' ',
         el('button', { class: 'mini perigo', text: 'Excluir', onclick: () => excluirVD(vd.id) }),
@@ -180,16 +176,18 @@ function renderPagamentos() {
   corpo.replaceChildren();
   tbl.classList.toggle('oculto', calculo.pagamentos.length === 0);
   const nomeImputacao = { auto: 'Automática', exprop: 'Expropriação', prisao: 'Coerção pessoal' };
+  const dataBRde = (s) => (s ? dataBR(new Date(`${String(s).slice(0, 10)}T12:00:00`)) : '—');
   for (const pg of calculo.pagamentos) {
-    const quando = pg.tipo === 'periodo'
-      ? `${competenciaBR(pg.de)} a ${competenciaBR(pg.ate || pg.de)} (mensal)`
-      : dataBR(new Date(pg.data + 'T12:00:00'));
+    const inicio = pg.de || pg.data; // `data` por compatibilidade
+    const quando = pg.ate
+      ? `${dataBRde(inicio)} a ${dataBRde(pg.ate)} (mensal)`
+      : dataBRde(inicio);
     corpo.append(el('tr', {},
       el('td', { text: quando }),
       el('td', { class: 'num', text: `R$ ${moedaBR(Number(pg.valor))}` }),
       el('td', { text: nomeImputacao[pg.rito || 'auto'] }),
       el('td', { text: pg.descricao || '' }),
-      el('td', {},
+      el('td', { class: 'acoes' },
         el('button', { class: 'mini suave', text: 'Editar', onclick: () => editarPg(pg.id) }),
         ' ',
         el('button', { class: 'mini perigo', text: 'Excluir', onclick: () => excluirPg(pg.id) }),
@@ -201,15 +199,12 @@ function renderPagamentos() {
 function editarPg(id) {
   const pg = calculo.pagamentos.find((p) => p.id === id);
   if (!pg) return;
-  $('pgTipo').value = pg.tipo;
-  $('pgData').value = pg.data || '';
-  $('pgDe').value = pg.de || '';
+  $('pgRito').value = pg.rito || 'auto';
+  $('pgDe').value = (pg.de || pg.data || '').slice(0, 10);
   $('pgAte').value = pg.ate || '';
   $('pgValor').value = pg.valor;
-  $('pgRito').value = pg.rito || 'auto';
   $('pgDesc').value = pg.descricao || '';
   calculo.pagamentos = calculo.pagamentos.filter((p) => p.id !== id);
-  atualizarVisibilidades();
   aposMudanca();
   $('pgValor').focus();
 }
@@ -221,28 +216,20 @@ function excluirPg(id) {
 
 $('formPg').addEventListener('submit', (e) => {
   e.preventDefault();
-  const tipo = $('pgTipo').value;
+  const de = $('pgDe').value;
+  const ate = $('pgAte').value || null;
   const valor = parseValor($('pgValor').value);
+  if (!de) return toast('Informe a data do pagamento.', true);
   if (!valor || valor <= 0) return toast('Informe um valor válido.', true);
-  const pg = {
+  if (ate && ate < de) return toast('"Até" não pode ser anterior a "De".', true);
+  calculo.pagamentos.push({
     id: crypto.randomUUID(),
-    tipo,
-    valor,
     rito: $('pgRito').value,
+    de, ate,
+    valor,
     descricao: $('pgDesc').value.trim(),
-  };
-  if (tipo === 'periodo') {
-    if (!$('pgDe').value) return toast('Informe o início do período.', true);
-    pg.de = $('pgDe').value;
-    pg.ate = $('pgAte').value || null;
-    if (pg.ate && pg.ate < pg.de) return toast('"Até" não pode ser anterior a "De".', true);
-  } else {
-    if (!$('pgData').value) return toast('Informe a data do pagamento.', true);
-    pg.data = $('pgData').value;
-  }
-  calculo.pagamentos.push(pg);
+  });
   $('formPg').reset();
-  atualizarVisibilidades();
   aposMudanca();
 });
 
@@ -407,7 +394,7 @@ function renderDemonstrativo() {
       corpoI,
       el('tfoot', {}, el('tr', {},
         el('td', { colspan: '8', text: 'Subtotal 01 — total das parcelas' }),
-        el('td', { class: 'num', text: moedaBR(demo.totais.subtotal01) }),
+        el('td', { class: 'num', text: moedaBR(demo.totais.parcelas) }),
         el('td'),
       )),
     ));
@@ -482,7 +469,6 @@ for (const id of ['pNum', 'pOrgao', 'pRequerente', 'pRequerido', 'cDataBase', 'c
   $(id).addEventListener('change', () => aposMudanca());
 }
 $('vdForma').addEventListener('change', atualizarVisibilidades);
-$('pgTipo').addEventListener('change', atualizarVisibilidades);
 
 // --------------------------- salvar / PDF / novo ----------------------------
 async function salvar() {
