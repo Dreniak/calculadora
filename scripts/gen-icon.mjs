@@ -2,7 +2,7 @@
 // Desenho: fundo azul-escuro com "P A" estilizado — placeholder até a definição
 // da identidade visual (PRD §13).
 import { deflateSync } from 'node:zlib';
-import { writeFileSync } from 'node:fs';
+import { mkdirSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -98,6 +98,7 @@ function makeIco(size) {
 }
 
 const dir = join(here, '..', 'src-tauri', 'icons');
+mkdirSync(dir, { recursive: true });   // a pasta é ignorada pelo git (não vem no checkout)
 writeFileSync(join(dir, 'icon.png'), makePng(256));
 writeFileSync(join(dir, 'icon.ico'), makeIco(48));
 console.log('Ícones gerados em', dir);
