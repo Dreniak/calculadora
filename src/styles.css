@@ -22,6 +22,9 @@ html, body {
   font: 14px/1.45 "Segoe UI", system-ui, -apple-system, sans-serif;
   color: var(--texto);
   background: var(--fundo);
+  /* desativa o overscroll elástico do WebView (espaço vazio ao rolar além
+     do topo/fim do conteúdo) */
+  overscroll-behavior: none;
 }
 
 body { display: flex; min-height: 100vh; }
